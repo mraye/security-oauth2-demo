@@ -1,4 +1,4 @@
-package com.github.vspro.controller;
+package com.github.vspro.controller.rest;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
