@@ -1,9 +1,167 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+       xmlns:security="http://www.springframework.org/schema/security"
+       xmlns:oauth2="http://www.springframework.org/schema/security/oauth2"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
+       http://www.springframework.org/schema/security/oauth2 http://www.springframework.org/schema/security/spring-security-oauth2-2.0.xsd">
 
 
+
+    <!--spring默认获取access_token和refresh_token的uri,使用POST请求-->
+    <security:http pattern="/oauth/token" create-session="stateless"
+                    use-expressions="true">
+        <security:intercept-url pattern="/oauth/token" access="isFullyAuthenticated()"/>
+        <security:anonymous enabled="false"/>
+        <!--客户端增加http-basic认证-->
+        <security:http-basic entry-point-ref="oAuth2AuthenticationEntryPoint"/>
+        <!--解析client_id和client_secret-->
+        <security:custom-filter ref="clientCredentialsTokenEndpointFilter" before="BASIC_AUTH_FILTER"/>
+        <security:access-denied-handler ref="oAuth2AccessDeniedHandler"/>
+        <!--禁用csrf-->
+        <security:csrf disabled="true"/>
+    </security:http>
+
+    <security:http pattern="/rest/api/**" create-session="never" use-expressions="true"
+                   entry-point-ref="oAuth2AuthenticationEntryPoint"
+                   access-decision-manager-ref="accessDecisionManager">
+        <security:anonymous enabled="false"/>
+        <security:intercept-url pattern="/rest/api/**" access="hasRole('ROLE_USER')"/>
+        <security:custom-filter ref="resourceServerFilter" before="PRE_AUTH_FILTER" />
+        <security:access-denied-handler ref="oAuth2AccessDeniedHandler"/>
+        <security:expression-handler ref="oauth2WebExpressionHandler"/>
+        <security:csrf disabled="true"/>
+    </security:http>
+
+
+    <!--客户端认证器-->
+    <security:authentication-manager id="clientAuthenticationManager">
+        <security:authentication-provider user-service-ref="clientDetailsUserDetailsService"/>
+    </security:authentication-manager>
+
+
+    <bean id="clientDetailsUserDetailsService" class="org.springframework.security.oauth2.provider.client.ClientDetailsUserDetailsService">
+        <constructor-arg ref="clientDetailsService"/>
+    </bean>
+    <!--oAuth2 http-basic认证-->
+    <bean id="oAuth2AuthenticationEntryPoint" class="org.springframework.security.oauth2.provider.error.OAuth2AuthenticationEntryPoint">
+        <property name="realmName" value="sample/oauthClient"/>
+        <property name="typeName" value="Basic"/>
+    </bean>
+
+    <!--解析client_id和client_secret-->
+    <bean id="clientCredentialsTokenEndpointFilter" class="org.springframework.security.oauth2.provider.client.ClientCredentialsTokenEndpointFilter">
+        <property name="authenticationManager" ref="clientAuthenticationManager"/>
+    </bean>
+    <bean id="oAuth2AccessDeniedHandler"
+          class="org.springframework.security.oauth2.provider.error.OAuth2AccessDeniedHandler">
+    </bean>
+
+
+    <!--token存储-->
+    <bean id="tokenStore" class="org.springframework.security.oauth2.provider.token.store.InMemoryTokenStore"/>
+    <!--token管理-->
+    <bean id="tokenServices" class="org.springframework.security.oauth2.provider.token.DefaultTokenServices">
+        <property name="tokenStore" ref="tokenStore"/>
+         <!--
+         如果请求的token要求返回refresh_token的话,需要设置为true,
+         并且在配置client的时候需要authorized-grant-types属性
+         包括refresh_token类型才会生效
+         -->
+        <property name="supportRefreshToken" value="true"/>
+        <property name="clientDetailsService" ref="clientDetailsService"/>
+        <!--access_token有效时间-->
+        <property name="accessTokenValiditySeconds" value="2000"/>
+    </bean>
+
+    <!--已经认证过过的token处理-->
+    <bean id="oAuth2RequestFactory" class="org.springframework.security.oauth2.provider.request.DefaultOAuth2RequestFactory">
+        <constructor-arg ref="clientDetailsService"/>
+    </bean>
+
+    <!--授权处理器-->
+    <bean id="userApprovalHandler" class="org.springframework.security.oauth2.provider.approval.TokenStoreUserApprovalHandler">
+        <property name="requestFactory" ref="oAuth2RequestFactory"/>
+        <property name="tokenStore" ref="tokenStore"/>
+        <property name="clientDetailsService" ref="clientDetailsService"/>
+    </bean>
+
+    <!--授权服务器-->
+    <oauth2:authorization-server
+        client-details-service-ref="clientDetailsService"
+        token-services-ref="tokenServices"
+        user-approval-handler-ref="userApprovalHandler">
+        <!--支持4种访问方式-->
+        <oauth2:authorization-code/>
+        <oauth2:implicit/>
+        <oauth2:refresh-token/>
+        <oauth2:client-credentials/>
+        <oauth2:password/>
+    </oauth2:authorization-server>
+
+
+    <!--资源服务器-->
+    <oauth2:resource-server
+            id="resourceServerFilter"
+            resource-id="sample"
+            token-services-ref="tokenServices"/>
+    <oauth2:client-details-service id="clientDetailsService">
+        <!--只有在authorized-grant-types加了refresh_token才会在token中返回refresh_token属性-->
+        <oauth2:client
+                client-id="pair"
+                resource-ids="sample"
+                authorized-grant-types="authorization_code,refresh_token"
+                authorities="ROLE_USER"
+                scope="read,write,trust"
+                secret="secret" redirect-uri="http://baidu.com"/>
+        <oauth2:client
+                client-id="banana"
+                resource-ids="sample"
+                authorized-grant-types="implicit"
+                scope="read,write,trust"
+                authorities="ROLE_USER"
+                redirect-uri="http://baidu.com"
+                secret="secret"/>
+
+        <oauth2:client
+                client-id="orange"
+                resource-ids="sample"
+                authorities="ROLE_USER"
+                authorized-grant-types="client_credentials"
+                scope="read,write,trust"
+                secret="secret"/>
+
+        <oauth2:client
+                client-id="apple"
+                resource-ids="sample"
+                authorized-grant-types="password"
+                authorities="ROLE_USER"
+                scope="read,write,trust"
+                secret="secret"/>
+
+    </oauth2:client-details-service>
+    <bean id="accessDecisionManager" class="org.springframework.security.access.vote.UnanimousBased">
+        <constructor-arg>
+            <list>
+                <bean class="org.springframework.security.oauth2.provider.vote.ScopeVoter"/>
+                <!--<bean class="org.springframework.security.access.vote.RoleVoter"/>-->
+                <bean class="org.springframework.security.access.vote.AuthenticatedVoter"/>
+                <!--处理OGNL表达式-->
+                <bean class="org.springframework.security.web.access.expression.WebExpressionVoter">
+                    <property name="expressionHandler" ref="oauth2WebExpressionHandler"/>
+                </bean>
+            </list>
+        </constructor-arg>
+    </bean>
+    <oauth2:web-expression-handler id="oauth2WebExpressionHandler"/>
+
+    <security:global-method-security
+            pre-post-annotations="enabled"
+            proxy-target-class="true">
+        <security:expression-handler ref="expressionHandler"/>
+    </security:global-method-security>
+    <oauth2:expression-handler id="expressionHandler"/>
 
 
 
