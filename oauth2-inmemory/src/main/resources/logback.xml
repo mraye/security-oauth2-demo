@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<!-- 一是把日志信息转换成字节数组,二是把字节数组写入到输出流 -->
+		<encoder>
+			<Pattern>[%5level] %logger{0} %msg%n</Pattern>
+		<!-- 	这里根部不需要设置UTF-8编码，反而设置控制台就会乱码
+		<charset>UTF-8</charset> 
+		-->
+		</encoder>
+	</appender>
+
+	<root level="DEBUG">
+		<appender-ref ref="STDOUT" />
+	</root>
+
+</configuration>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
