@@ -15,7 +15,7 @@
         <security:intercept-url pattern="/oauth/token" access="isFullyAuthenticated()"/>
         <security:anonymous enabled="false"/>
         <!--客户端增加http-basic认证-->
-        <security:http-basic entry-point-ref="oAuth2AuthenticationEntryPoint"/>
+        <security:http-basic entry-point-ref="clientAuthenticationEntryPoint"/>
         <!--解析client_id和client_secret-->
         <security:custom-filter ref="clientCredentialsTokenEndpointFilter" before="BASIC_AUTH_FILTER"/>
         <security:access-denied-handler ref="oAuth2AccessDeniedHandler"/>
@@ -33,7 +33,9 @@
         <security:expression-handler ref="oauth2WebExpressionHandler"/>
         <security:csrf disabled="true"/>
     </security:http>
-
+    <bean id="oAuth2AuthenticationEntryPoint" class="org.springframework.security.oauth2.provider.error.OAuth2AuthenticationEntryPoint">
+        <property name="realmName" value="sample/oauthClient"/>
+    </bean>
 
     <!--客户端认证器-->
     <security:authentication-manager id="clientAuthenticationManager">
@@ -45,7 +47,8 @@
         <constructor-arg ref="clientDetailsService"/>
     </bean>
     <!--oAuth2 http-basic认证-->
-    <bean id="oAuth2AuthenticationEntryPoint" class="org.springframework.security.oauth2.provider.error.OAuth2AuthenticationEntryPoint">
+    <bean id="clientAuthenticationEntryPoint"
+          class="org.springframework.security.oauth2.provider.error.OAuth2AuthenticationEntryPoint">
         <property name="realmName" value="sample/oauthClient"/>
         <property name="typeName" value="Basic"/>
     </bean>
