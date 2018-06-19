@@ -10,6 +10,7 @@
     <version>1.0-SNAPSHOT</version>
     <modules>
         <module>oauth2-inmemory</module>
+        <module>oauth2-jdbc</module>
     </modules>
 
     <properties>
@@ -229,6 +230,7 @@
                 <artifactId>jackson-databind</artifactId>
                 <version>${jackjson.version}</version>
             </dependency>
+
         </dependencies>
     </dependencyManagement>
 
