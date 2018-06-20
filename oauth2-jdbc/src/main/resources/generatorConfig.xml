@@ -54,17 +54,12 @@
             <property name="enableSubPackages" value="false"/>
         </javaClientGenerator>
         <!-- 指定数据库表 -->
-        <table tableName="authorities" domainObjectName="Authority"
+        <table tableName="users" domainObjectName="UserDo"
                enableCountByExample="false"
                enableUpdateByExample="false"
                enableDeleteByExample="false"
                enableSelectByExample="false"
                selectByExampleQueryId="false"></table>
-        <!-- <table schema="" tableName="sys_user"></table>
-        <table schema="" tableName="sys_role"></table>
-        <table schema="" tableName="sys_permission"></table>
-        <table schema="" tableName="sys_user_role"></table>
-        <table schema="" tableName="sys_role_permission"></table> -->
 
         <!-- 有些表的字段需要指定java类型
          <table schema="" tableName="">
