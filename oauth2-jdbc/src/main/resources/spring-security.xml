@@ -4,6 +4,7 @@
        xmlns:security="http://www.springframework.org/schema/security"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd">
 
+    <import resource="classpath:spring-oauth2.xml"/>
 
     <security:http use-expressions="false" pattern="/**" authentication-manager-ref="authenticationManager">
         <security:intercept-url pattern="/index/**" access="ROLE_USER, ROLE_ADMIN"/>
@@ -19,7 +20,6 @@
     </security:authentication-manager>
 
     <bean id="customUserDetailService" class="com.github.vspro.framework.security.CustomUserDetailService">
-
     </bean>
 
 </beans>
