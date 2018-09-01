@@ -33,3 +33,5 @@ gradlew
 
 oauth2-inmemory/target/
 oauth2-jdbc/target/
+oauth2-jdbc.iml
+oauth2-inmemory.iml
