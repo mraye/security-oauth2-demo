@@ -19,7 +19,5 @@
         <security:authentication-provider user-service-ref="customUserDetailService"/>
     </security:authentication-manager>
 
-    <bean id="customUserDetailService" class="com.github.vspro.framework.security.CustomUserDetailService">
-    </bean>
 
 </beans>

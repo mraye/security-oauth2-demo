@@ -9,7 +9,7 @@
 
 
 
-    <security:http pattern="/oauth/token"
+    <security:http pattern="/oauth/token" authentication-manager-ref="clientAuthenticationManager"
                    create-session="stateless" use-expressions="true">
         <security:anonymous enabled="false"/>
         <security:intercept-url pattern="/oauth/token" access="isFullyAuthenticated()"/>
@@ -58,6 +58,7 @@
         <property name="realmName" value="sample/oauthClient"/>
         <property name="typeName" value="Basic"/>
     </bean>
+    <!--用于client_credentials模式拦截解析-->
     <bean id="clientCredentialsTokenEndpointFilter" class="org.springframework.security.oauth2.provider.client.ClientCredentialsTokenEndpointFilter">
         <property name="authenticationManager" ref="clientAuthenticationManager"/>
     </bean>
@@ -91,10 +92,16 @@
         <property name="tokenStore" ref="jdbcTokenStore"/>
         <property name="clientDetailsService" ref="jdbcClientDetailsService"/>
         <property name="requestFactory" ref="oAuth2RequestFactory"/>
+        <property name="approvalParameter" value="true"/>
     </bean>
     <oauth2:resource-server
             id="resourceServerFilter"
-            authentication-manager-ref="oAuth2AuthenticationManager"/>
+            resource-id="sample"
+            token-services-ref="tokenServices" entry-point-ref="loginUrlAuthenticationEntryPoint"/>
+    <!--<bean id="loginUrlAuthenticationEntryPoint" class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">-->
+        <!---->
+    <!--</bean>-->
+
 
     <!--授权管理器-->
     <oauth2:authorization-server
