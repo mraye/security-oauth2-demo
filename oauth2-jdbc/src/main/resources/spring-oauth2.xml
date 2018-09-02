@@ -92,7 +92,6 @@
         <property name="tokenStore" ref="jdbcTokenStore"/>
         <property name="clientDetailsService" ref="jdbcClientDetailsService"/>
         <property name="requestFactory" ref="oAuth2RequestFactory"/>
-        <property name="approvalParameter" value="true"/>
     </bean>
     <oauth2:resource-server
             id="resourceServerFilter"

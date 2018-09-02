@@ -6,11 +6,12 @@
 
     <import resource="classpath:spring-oauth2.xml"/>
 
-    <security:http use-expressions="false" pattern="/**" authentication-manager-ref="authenticationManager">
+    <security:http use-expressions="false" pattern="/**"
+                   authentication-manager-ref="authenticationManager">
         <security:intercept-url pattern="/index/**" access="ROLE_USER, ROLE_ADMIN"/>
         <security:intercept-url pattern="/rest/api/**" access="ROLE_ADMIN"/>
         <security:intercept-url pattern="/**" access="ROLE_ADMIN,ROLE_USER"/>
-        <security:form-login always-use-default-target="true" default-target-url="/index"/>
+        <security:form-login authentication-success-handler-ref="customSuccessHandler" always-use-default-target="true" default-target-url="/index"/>
         <security:logout/>
         <security:csrf disabled="true"/>
     </security:http>
@@ -20,4 +21,8 @@
     </security:authentication-manager>
 
 
+
+    <bean id="customSuccessHandler" class="org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler">
+
+    </bean>
 </beans>
