@@ -97,7 +97,7 @@
     <oauth2:resource-server
             id="resourceServerFilter"
             resource-id="sample"
-            token-services-ref="tokenServices" entry-point-ref="loginUrlAuthenticationEntryPoint"/>
+            token-services-ref="tokenServices"/>
     <!--<bean id="loginUrlAuthenticationEntryPoint" class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">-->
         <!---->
     <!--</bean>-->
